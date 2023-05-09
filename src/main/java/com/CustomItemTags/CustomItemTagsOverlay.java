@@ -71,6 +71,7 @@ class CustomItemTagsOverlay extends WidgetItemOverlay
             {
                 graphics.setFont(FontManager.getRunescapeSmallFont());
                 renderText(graphics, widgetItem.getCanvasBounds(), item.tag);
+                break;
             }
         }
     }
