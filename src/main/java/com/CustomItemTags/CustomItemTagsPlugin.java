@@ -62,24 +62,6 @@ public class CustomItemTagsPlugin extends Plugin
 		return configManager.getConfig(CustomItemTagsConfig.class);
 	}
 
-	static class CustomTag //TODO refactor CustomTag class into its own file
-	{
-		public final String tag;
-		public final int itemID;
-		CustomTag(String tag, int itemID)
-		{
-			this.itemID = itemID;
-			this.tag = tag;
-		}
-		public static CustomTag fromString(String s)
-		{
-			String[] split = s.split(",");
-			String tag = split[0].trim();
-			int ItemID =  Integer.parseInt(split.length > 1 ? split[1].toLowerCase().trim() : "");
-			return new CustomTag(tag, ItemID);
-		}
-	}
-
 	public void reloadCustomSwaps()
 	{
 		customTags.clear();

@@ -43,7 +43,6 @@ import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.overlay.WidgetItemOverlay;
 import net.runelite.client.ui.overlay.components.TextComponent;
-import com.CustomItemTags.CustomItemTagsPlugin.CustomTag;
 
 class CustomItemTagsOverlay extends WidgetItemOverlay
 {
