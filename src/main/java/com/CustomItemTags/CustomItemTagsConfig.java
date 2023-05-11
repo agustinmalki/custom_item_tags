@@ -40,7 +40,7 @@ public interface CustomItemTagsConfig extends Config
 	@ConfigItem(
 			keyName = "customSwapperInstructions",
 			name = "Click to reset instructions",
-			description = "Options to swap to the top.",
+			description = "Instructions for how to add tags.",
 			section = customTagsInstructions,
 			position = 2
 	)
@@ -60,4 +60,6 @@ public interface CustomItemTagsConfig extends Config
 	default String customTags() {
 		return "";
 	}
+
+	//TODO add shift click menu option and toggle on/off to avoid menu clutter
 }

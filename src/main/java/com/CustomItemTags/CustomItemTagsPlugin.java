@@ -62,7 +62,7 @@ public class CustomItemTagsPlugin extends Plugin
 		return configManager.getConfig(CustomItemTagsConfig.class);
 	}
 
-	static class CustomTag
+	static class CustomTag //TODO refactor CustomTag class into its own file
 	{
 		public final String tag;
 		public final int itemID;

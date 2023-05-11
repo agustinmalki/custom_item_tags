@@ -80,7 +80,7 @@ class CustomItemTagsOverlay extends WidgetItemOverlay
     {
         final TextComponent textComponent = new TextComponent();
         textComponent.setPosition(new Point(bounds.x - 1, bounds.y + bounds.height - 1));
-        textComponent.setColor(Color.white);  //can add colors here in the future
+        textComponent.setColor(Color.white);  //TODO can add colors here in the future
         textComponent.setText(itemTag);
         textComponent.render(graphics);
     }
