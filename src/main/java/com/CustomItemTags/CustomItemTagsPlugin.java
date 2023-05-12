@@ -29,7 +29,7 @@ import com.google.inject.Provides;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
-
+import net.runelite.api.KeyCode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collection;
@@ -39,6 +39,14 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.api.events.MenuOpened;
+import net.runelite.api.MenuEntry;
+import net.runelite.api.MenuAction;
+import net.runelite.client.input.KeyManager;
+import net.runelite.api.widgets.Widget;
+import net.runelite.api.widgets.WidgetID;
+import net.runelite.api.widgets.WidgetInfo;
+import net.runelite.client.util.Text;
 
 @Slf4j
 @PluginDescriptor(
@@ -55,6 +63,8 @@ public class CustomItemTagsPlugin extends Plugin
 	private OverlayManager overlayManager;
 	@Inject
 	private CustomItemTagsOverlay overlay;
+	@Inject
+	private KeyManager keyManager;
 
 	@Provides
 	CustomItemTagsConfig provideConfig(ConfigManager configManager)
@@ -65,7 +75,7 @@ public class CustomItemTagsPlugin extends Plugin
 	public void reloadCustomSwaps()
 	{
 		customTags.clear();
-		customTags.addAll(loadCustomTags(config.customTags()));
+		customTags.addAll(loadCustomTags(config.getCustomTags()));
 	}
 
 	private Collection<? extends CustomTag> loadCustomTags(String customTags)
@@ -88,6 +98,59 @@ public class CustomItemTagsPlugin extends Plugin
 		if (configChanged.getGroup().equals("Custom Item Tags")) {
 			reloadCustomSwaps();
 		}
+	}
+
+	@Subscribe
+	public void onMenuOpened(final MenuOpened event)
+	{
+		if (!client.isKeyPressed(KeyCode.KC_SHIFT) || !config.shiftMenuOption())
+		{
+			return;
+		}
+
+		final MenuEntry[] entries = event.getMenuEntries();
+		for (int idx = entries.length - 1; idx >= 0; --idx)
+		{
+			final MenuEntry entry = entries[idx];
+			final Widget w = entry.getWidget();
+
+			if (w != null && WidgetInfo.TO_GROUP(w.getId()) == WidgetID.INVENTORY_GROUP_ID
+					&& "Examine".equals(entry.getOption()) && entry.getIdentifier() == 10)
+			{
+				final int itemId = w.getItemId();
+				final String[] name1 = w.getName().split(">");
+				final String[] name2 = name1[1].split("<"); //there's gotta be a better way to get this name without color
+				String itemName = name2[0];
+				//final Tag tag = getTag(itemId);
+
+				final MenuEntry parent = client.createMenuEntry(idx)
+						.setOption("Text tag")
+						.setTarget(entry.getTarget())
+						.setType(MenuAction.RUNELITE)
+						.onClick(e -> addTag(itemId,itemName));
+
+				/*client.createMenuEntry(idx)
+						.setOption("Pick")
+						.setType(MenuAction.RUNELITE)
+						.setParent(parent).
+				if (tag != null)
+				{
+					client.createMenuEntry(idx)
+							.setOption("Remove text")
+							.setType(MenuAction.RUNELITE)
+							.setParent(parent)
+							.onClick(e -> removeTag(itemId)); //TODO implement add/remove submenus
+				}
+				 */
+			}
+		}
+	}
+
+	void addTag(int itemId, String itemName)
+	{
+		String n = config.getCustomTags().concat("\n").concat(itemName).concat(",").concat(Integer.toString(itemId));
+
+		config.setCustomTags(n);
 	}
 
 	@Override

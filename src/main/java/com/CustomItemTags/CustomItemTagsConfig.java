@@ -34,14 +34,17 @@ import net.runelite.client.config.ConfigSection;
 @ConfigGroup("Custom Item Tags")
 public interface CustomItemTagsConfig extends Config
 {
-	@ConfigSection(name = "Instructions", description = "instructions", position = 0, closedByDefault = true)
-	String customTagsInstructions = "Custom tags instructions";
+	@ConfigSection(name = "Instructions",
+			description = "",
+			position = 0,
+			closedByDefault = true)
+	String customTagsInstructionsSection = "Custom tags instructions";
 
 	@ConfigItem(
 			keyName = "customSwapperInstructions",
 			name = "Click to reset instructions",
 			description = "Instructions for how to add tags.",
-			section = customTagsInstructions,
+			section = customTagsInstructionsSection,
 			position = 2
 	)
 	default String customTagsInstructions() {
@@ -49,17 +52,34 @@ public interface CustomItemTagsConfig extends Config
 	}
 
 	@ConfigSection(name = "Custom Tags", description = "List custom item tags here", position = 1)
-	String customTags = "Custom Tags";
+	String customTagsSection = "Custom Tags";
 	@ConfigItem(
 			keyName = "customTags",
 			name = "Custom tags",
 			description = "Options for item text.",
-			section = customTags,
+			section = customTagsSection,
 			position = 0
 	)
-	default String customTags() {
+	default String getCustomTags() {
 		return "";
 	}
+	@ConfigItem(
+			keyName = "customTags",
+			name = "",
+			description = ""
+	)
+	void setCustomTags(String key);
 
-	//TODO add shift click menu option and toggle on/off to avoid menu clutter
+	@ConfigItem(
+			keyName = "shiftMenuOption",
+			name = "Show on shift-click menu",
+			description = "Add tag option to shift-click menu\nConfig window must be closed",
+			section = customTagsSection,
+			position = 1
+	)
+
+	default boolean shiftMenuOption()
+	{
+		return false;
+	}
 }

@@ -25,7 +25,7 @@
 
 package com.CustomItemTags;
 
-public class CustomTag //TODO refactor CustomTag class into its own file
+public class CustomTag
 {
     public final String tag;
     public final int itemID;
@@ -38,7 +38,8 @@ public class CustomTag //TODO refactor CustomTag class into its own file
     {
         String[] split = s.split(",");
         String tag = split[0].trim();
-        int ItemID =  Integer.parseInt(split.length > 1 ? split[1].toLowerCase().trim() : "");
+        String iD = split.length > 1 ? split[1].toLowerCase().trim() : "";
+        int ItemID =  Integer.parseInt(iD.replaceAll("[\\D]", ""));
         return new CustomTag(tag, ItemID);
     }
 }
