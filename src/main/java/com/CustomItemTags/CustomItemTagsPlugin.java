@@ -46,7 +46,6 @@ import net.runelite.client.input.KeyManager;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetID;
 import net.runelite.api.widgets.WidgetInfo;
-import net.runelite.client.util.Text;
 
 @Slf4j
 @PluginDescriptor(
@@ -127,7 +126,7 @@ public class CustomItemTagsPlugin extends Plugin
 						.setOption("Text tag")
 						.setTarget(entry.getTarget())
 						.setType(MenuAction.RUNELITE)
-						.onClick(e -> addTag(itemId,itemName));
+						.onClick(e -> addTag(itemId,itemName)); //TODO add dialog box for custom name
 
 				/*client.createMenuEntry(idx)
 						.setOption("Pick")
