@@ -44,8 +44,7 @@ import net.runelite.api.MenuEntry;
 import net.runelite.api.MenuAction;
 import net.runelite.client.input.KeyManager;
 import net.runelite.api.widgets.Widget;
-import net.runelite.api.widgets.WidgetID;
-import net.runelite.api.widgets.WidgetInfo;
+import net.runelite.api.widgets.InterfaceID;
 
 @Slf4j
 @PluginDescriptor(
@@ -113,7 +112,7 @@ public class CustomItemTagsPlugin extends Plugin
 			final MenuEntry entry = entries[idx];
 			final Widget w = entry.getWidget();
 
-			if (w != null && WidgetInfo.TO_GROUP(w.getId()) == WidgetID.INVENTORY_GROUP_ID
+			if (w != null && (w.getId() >>> 16) == InterfaceID.INVENTORY
 					&& "Examine".equals(entry.getOption()) && entry.getIdentifier() == 10)
 			{
 				final int itemId = w.getItemId();
