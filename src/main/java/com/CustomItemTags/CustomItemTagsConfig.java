@@ -48,7 +48,7 @@ public interface CustomItemTagsConfig extends Config
 			position = 2
 	)
 	default String customTagsInstructions() {
-		return "### Basic use:\nAdd tags, one per line. Format is \"text,item ID\". Item IDs can be found on https://www.osrsbox.com/tools/item-search/. \n";
+		return "### Basic use:\nAdd tags, one per line. Format is \"text,item ID\". Item IDs can be found on https://www.osrsbox.com/tools/item-search/.\n\n### Quick tagging:\nEnable \"Show on shift-click menu\" below, then shift+right-click any inventory item to add, edit, or remove tags in-game.\n";
 	}
 
 	@ConfigSection(name = "Custom Tags", description = "List custom item tags here", position = 1)
