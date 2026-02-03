@@ -32,12 +32,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.Collection;
 
-import static net.runelite.api.widgets.WidgetID.GUIDE_PRICE_GROUP_ID;
-import static net.runelite.api.widgets.WidgetID.KEPT_ON_DEATH_GROUP_ID;
-import static net.runelite.api.widgets.WidgetID.LOOTING_BAG_GROUP_ID;
-import static net.runelite.api.widgets.WidgetID.SEED_BOX_GROUP_ID;
-import static net.runelite.api.widgets.WidgetID.KINGDOM_GROUP_ID;
-
+import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.WidgetItem;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.FontManager;
@@ -56,7 +51,7 @@ class CustomItemTagsOverlay extends WidgetItemOverlay
         this.itemManager = itemManager;
         showOnInventory();
         showOnBank();
-        showOnInterfaces(KEPT_ON_DEATH_GROUP_ID, GUIDE_PRICE_GROUP_ID, LOOTING_BAG_GROUP_ID, SEED_BOX_GROUP_ID, KINGDOM_GROUP_ID);
+        showOnInterfaces(InterfaceID.KEPT_ON_DEATH, InterfaceID.GUIDE_PRICES, InterfaceID.LOOTING_BAG, InterfaceID.SEED_BOX, InterfaceID.KINGDOM);
     }
 
     static final Collection<CustomTag> customTags = CustomItemTagsPlugin.getTags();

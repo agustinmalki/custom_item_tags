@@ -42,10 +42,12 @@ import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.api.events.MenuOpened;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.MenuAction;
+import net.runelite.api.Menu;
 import net.runelite.client.input.KeyManager;
 import net.runelite.api.widgets.Widget;
-import net.runelite.api.widgets.WidgetID;
-import net.runelite.api.widgets.WidgetInfo;
+import net.runelite.api.widgets.InterfaceID;
+import net.runelite.client.game.chatbox.ChatboxPanelManager;
+import net.runelite.client.callback.ClientThread;
 
 @Slf4j
 @PluginDescriptor(
@@ -64,6 +66,12 @@ public class CustomItemTagsPlugin extends Plugin
 	private CustomItemTagsOverlay overlay;
 	@Inject
 	private KeyManager keyManager;
+	@Inject
+	private ChatboxPanelManager chatboxPanelManager;
+	@Inject
+	private ClientThread clientThread;
+	@Inject
+	private ConfigManager configManager;
 
 	@Provides
 	CustomItemTagsConfig provideConfig(ConfigManager configManager)
@@ -92,6 +100,62 @@ public class CustomItemTagsPlugin extends Plugin
 		return customTags;
 	}
 
+	private String getTagForItem(int itemId)
+	{
+		for (CustomTag tag : customTags)
+		{
+			if (tag.itemID == itemId)
+			{
+				return tag.tag;
+			}
+		}
+		return null;
+	}
+
+	private void removeTag(int itemId)
+	{
+		String[] lines = config.getCustomTags().split("\n");
+		StringBuilder newConfig = new StringBuilder();
+
+		for (String line : lines)
+		{
+			if (line.trim().isEmpty())
+			{
+				continue;
+			}
+
+			CustomTag tag = CustomTag.fromString(line);
+			if (tag.itemID != itemId)
+			{
+				if (newConfig.length() > 0)
+				{
+					newConfig.append("\n");
+				}
+				newConfig.append(line);
+			}
+		}
+
+		config.setCustomTags(newConfig.toString());
+	}
+
+	private void openTagDialog(int itemId, String existingTag)
+	{
+		chatboxPanelManager.openTextInput("Enter custom tag text:")
+				.addCharValidator(c -> c != ',')
+				.value(existingTag != null ? existingTag : "")
+				.onDone((input) ->
+				{
+					clientThread.invoke(() ->
+					{
+						if (input != null && !input.trim().isEmpty())
+						{
+							addTag(itemId, input.trim());
+						}
+					});
+				})
+				.build();
+	}
+
 	@Subscribe
 	public void onConfigChanged(ConfigChanged configChanged) {
 		if (configChanged.getGroup().equals("Custom Item Tags")) {
@@ -113,43 +177,62 @@ public class CustomItemTagsPlugin extends Plugin
 			final MenuEntry entry = entries[idx];
 			final Widget w = entry.getWidget();
 
-			if (w != null && WidgetInfo.TO_GROUP(w.getId()) == WidgetID.INVENTORY_GROUP_ID
+			if (w != null && (w.getId() >>> 16) == InterfaceID.INVENTORY
 					&& "Examine".equals(entry.getOption()) && entry.getIdentifier() == 10)
 			{
 				final int itemId = w.getItemId();
-				final String[] name1 = w.getName().split(">");
-				final String[] name2 = name1[1].split("<"); //there's gotta be a better way to get this name without color
-				String itemName = name2[0];
-				//final Tag tag = getTag(itemId);
+				final String existingTag = getTagForItem(itemId);
 
+				// Create parent menu entry with type RUNELITE
 				final MenuEntry parent = client.createMenuEntry(idx)
 						.setOption("Text tag")
 						.setTarget(entry.getTarget())
-						.setType(MenuAction.RUNELITE)
-						.onClick(e -> addTag(itemId,itemName)); //TODO add dialog box for custom name
+						.setType(MenuAction.RUNELITE);
 
-				/*client.createMenuEntry(idx)
-						.setOption("Pick")
-						.setType(MenuAction.RUNELITE)
-						.setParent(parent).
-				if (tag != null)
+				// Create submenu from parent
+				final Menu submenu = parent.createSubMenu();
+
+				if (existingTag == null)
 				{
-					client.createMenuEntry(idx)
-							.setOption("Remove text")
+					// No existing tag - show "Set" submenu option
+					submenu.createMenuEntry(0)
+							.setOption("Set")
 							.setType(MenuAction.RUNELITE)
-							.setParent(parent)
-							.onClick(e -> removeTag(itemId)); //TODO implement add/remove submenus
+							.onClick(e -> openTagDialog(itemId, null));
 				}
-				 */
+				else
+				{
+					// Tag exists - show "Edit" and "Remove" submenu options
+					submenu.createMenuEntry(0)
+							.setOption("Edit")
+							.setType(MenuAction.RUNELITE)
+							.onClick(e -> openTagDialog(itemId, existingTag));
+
+					submenu.createMenuEntry(0)
+							.setOption("Remove")
+							.setType(MenuAction.RUNELITE)
+							.onClick(e -> removeTag(itemId));
+				}
 			}
 		}
 	}
 
-	void addTag(int itemId, String itemName)
+	void addTag(int itemId, String tagText)
 	{
-		String n = config.getCustomTags().concat("\n").concat(itemName).concat(",").concat(Integer.toString(itemId));
+		// Remove existing tag first to prevent duplicates
+		removeTag(itemId);
 
-		config.setCustomTags(n);
+		String currentConfig = config.getCustomTags();
+		String newTag = tagText + "," + itemId;
+
+		if (currentConfig.isEmpty())
+		{
+			config.setCustomTags(newTag);
+		}
+		else
+		{
+			config.setCustomTags(currentConfig + "\n" + newTag);
+		}
 	}
 
 	@Override
