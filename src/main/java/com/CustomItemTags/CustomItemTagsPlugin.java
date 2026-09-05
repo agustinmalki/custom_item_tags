@@ -198,7 +198,7 @@ public class CustomItemTagsPlugin extends Plugin
 					moveTag(itemId, CustomTagLocation.TOP_LEFT);
 				}));
 		if(existingLoc != CustomTagLocation.TOP_RIGHT)
-			builder = builder.option("4. Bottom Right", () ->
+			builder = builder.option("4. Top Right", () ->
 				clientThread.invoke(() ->
 				{
 					moveTag(itemId, CustomTagLocation.TOP_RIGHT);
