@@ -63,6 +63,7 @@ public interface CustomItemTagsConfig extends Config
 	default String getCustomTags() {
 		return "";
 	}
+
 	@ConfigItem(
 			keyName = "customTags",
 			name = "",
