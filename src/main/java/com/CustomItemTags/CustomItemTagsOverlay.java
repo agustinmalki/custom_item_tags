@@ -26,10 +26,8 @@
 package com.CustomItemTags;
 
 import com.google.inject.Inject;
-import java.awt.Graphics2D;
-import java.awt.Color;
-import java.awt.Point;
-import java.awt.Rectangle;
+
+import java.awt.*;
 import java.util.Collection;
 
 import net.runelite.api.widgets.InterfaceID;
@@ -64,18 +62,37 @@ class CustomItemTagsOverlay extends WidgetItemOverlay
             if (item.itemID == itemId)
             {
                 graphics.setFont(FontManager.getRunescapeSmallFont());
-                renderText(graphics, widgetItem.getCanvasBounds(), item.tag);
+                renderText(graphics, widgetItem.getCanvasBounds(), item.tag, item.loc);
                 break;
             }
         }
     }
 
-    private void renderText(Graphics2D graphics, Rectangle bounds, String itemTag)
+    private void renderText(Graphics2D graphics, Rectangle bounds, String itemTag, CustomTagLocation loc)
     {
         final TextComponent textComponent = new TextComponent();
-        textComponent.setPosition(new Point(bounds.x - 1, bounds.y + bounds.height - 1));
-        textComponent.setColor(Color.white);  //TODO can add colors here in the future, modify fromString
+//        textComponent.setColor(Color.white);  //TODO can add colors here in the future, modify fromString
         textComponent.setText(itemTag);
+        var textDimension = textComponent.render(graphics);
+
+        int itemOverlayX = (int) ((
+            loc == CustomTagLocation.BOTTOM_LEFT ||
+                loc == CustomTagLocation.TOP_LEFT
+        )
+            ? bounds.getMinX()
+            : bounds.getMaxX() - textDimension.getWidth() - 1
+        );
+
+        int itemOverlayY = (int) ((
+            loc == CustomTagLocation.TOP_LEFT ||
+               loc == CustomTagLocation.TOP_RIGHT
+        )
+            ? bounds.getMinY() + textDimension.getHeight() - 1
+            : bounds.getMaxY()
+        );
+
+//        textComponent.setPosition(new Point(bounds.x - 1, ));
+        textComponent.setPosition(new Point(itemOverlayX, itemOverlayY));
         textComponent.render(graphics);
     }
 

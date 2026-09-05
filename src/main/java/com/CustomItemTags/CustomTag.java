@@ -25,21 +25,54 @@
 
 package com.CustomItemTags;
 
+import java.util.Arrays;
+
 public class CustomTag
 {
     public final String tag;
     public final int itemID;
+    public final CustomTagLocation loc;
     CustomTag(String tag, int itemID)
+    {
+        this(tag, itemID, CustomTagLocation.BOTTOM_LEFT);
+    }
+
+    CustomTag(String tag, int itemID, CustomTagLocation location)
     {
         this.itemID = itemID;
         this.tag = tag;
+        this.loc = location;
     }
+
+    public CustomTag withLoc(CustomTagLocation l)
+    {
+        if (l == loc)
+        {
+            return this;
+        } else {
+            return new CustomTag(tag, itemID, l);
+        }
+    }
+
+    public String toLine() {
+        String toRet = this.tag + ", " +  this.itemID;
+        if (this.loc != CustomTagLocation.BOTTOM_LEFT)
+        {
+            toRet = toRet + ", " + this.loc.getAbbriviated();
+        }
+        return toRet;
+    }
+
     static CustomTag fromString(String s)
     {
         String[] split = s.split(",");
         String tag = split[0].trim();
         String iD = split.length > 1 ? split[1].toLowerCase().trim() : "";
         int ItemID =  Integer.parseInt(iD.replaceAll("[\\D]", ""));
-        return new CustomTag(tag, ItemID);
+
+        CustomTagLocation loc = null;
+        if(split.length > 2) loc = CustomTagLocation.fromStr(split[2].toLowerCase().trim());
+
+        return (loc == null) ? new CustomTag(tag, ItemID) : new CustomTag(tag, ItemID, loc);
     }
 }

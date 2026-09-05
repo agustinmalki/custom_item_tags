@@ -112,6 +112,18 @@ public class CustomItemTagsPlugin extends Plugin
 		return null;
 	}
 
+	private CustomTagLocation getLocForItem(int itemId)
+	{
+		for (CustomTag tag : customTags)
+		{
+			if (tag.itemID == itemId)
+			{
+				return tag.loc;
+			}
+		}
+		return null;
+	}
+
 	private void removeTag(int itemId)
 	{
 		String[] lines = config.getCustomTags().split("\n");
@@ -138,7 +150,7 @@ public class CustomItemTagsPlugin extends Plugin
 		config.setCustomTags(newConfig.toString());
 	}
 
-	private void openTagDialog(int itemId, String existingTag)
+	private void openTagDialog(int itemId, String existingTag, CustomTagLocation existingLoc)
 	{
 		chatboxPanelManager.openTextInput("Enter custom tag text:")
 				.addCharValidator(c -> c != ',')
@@ -149,11 +161,50 @@ public class CustomItemTagsPlugin extends Plugin
 					{
 						if (input != null && !input.trim().isEmpty())
 						{
-							addTag(itemId, input.trim());
+							addTag(itemId, input.trim(), existingLoc);
 						}
 					});
 				})
 				.build();
+	}
+
+	private void moveTagDialog(int itemId, CustomTagLocation existingLoc)
+	{
+//		chatboxPanelManager.openTextMenuInput("Tab laid out using the '" + autoLayout.getName() + "' layout.")
+//			.option("1. Keep", () ->
+//				saveLayout(new_))
+//			.option("2. Undo", () ->
+//				plugin.openTag(tag, old))
+//			.onClose(bankSearch::layoutBank)
+//			.build();
+		var builder = chatboxPanelManager.openTextMenuInput("Set tag location for \""+itemId+"\".");
+
+		if(existingLoc != CustomTagLocation.BOTTOM_LEFT)
+			builder = builder.option("1. Bottom Left", () ->
+				clientThread.invoke(() ->
+				{
+					moveTag(itemId, CustomTagLocation.BOTTOM_LEFT);
+				}));
+		if(existingLoc != CustomTagLocation.BOTTOM_RIGHT)
+			builder = builder.option("2. Bottom Right", () ->
+				clientThread.invoke(() ->
+				{
+					moveTag(itemId, CustomTagLocation.BOTTOM_RIGHT);
+				}));
+		if(existingLoc != CustomTagLocation.TOP_LEFT)
+			builder = builder.option("3. Top Left", () ->
+				clientThread.invoke(() ->
+				{
+					moveTag(itemId, CustomTagLocation.TOP_LEFT);
+				}));
+		if(existingLoc != CustomTagLocation.TOP_RIGHT)
+			builder = builder.option("4. Bottom Right", () ->
+				clientThread.invoke(() ->
+				{
+					moveTag(itemId, CustomTagLocation.TOP_RIGHT);
+				}));
+
+		builder.build();
 	}
 
 	@Subscribe
@@ -182,6 +233,7 @@ public class CustomItemTagsPlugin extends Plugin
 			{
 				final int itemId = w.getItemId();
 				final String existingTag = getTagForItem(itemId);
+				final CustomTagLocation existingLoc = getLocForItem(itemId);
 
 				// Create parent menu entry with type RUNELITE
 				final MenuEntry parent = client.createMenuEntry(idx)
@@ -198,7 +250,7 @@ public class CustomItemTagsPlugin extends Plugin
 					submenu.createMenuEntry(0)
 							.setOption("Set")
 							.setType(MenuAction.RUNELITE)
-							.onClick(e -> openTagDialog(itemId, null));
+							.onClick(e -> openTagDialog(itemId, null, null));
 				}
 				else
 				{
@@ -206,34 +258,86 @@ public class CustomItemTagsPlugin extends Plugin
 					submenu.createMenuEntry(0)
 							.setOption("Edit")
 							.setType(MenuAction.RUNELITE)
-							.onClick(e -> openTagDialog(itemId, existingTag));
+							.onClick(e -> openTagDialog(itemId, existingTag, existingLoc));
 
 					submenu.createMenuEntry(0)
 							.setOption("Remove")
 							.setType(MenuAction.RUNELITE)
 							.onClick(e -> removeTag(itemId));
+
+					submenu.createMenuEntry(0)
+						.setOption("Move")
+						.setType(MenuAction.RUNELITE)
+						.onClick(e -> moveTagDialog(itemId, existingLoc));
 				}
 			}
 		}
 	}
 
-	void addTag(int itemId, String tagText)
+	void addTag(int itemId, String tagText, CustomTagLocation tagLocation)
 	{
-		// Remove existing tag first to prevent duplicates
-		removeTag(itemId);
+		String[] lines = config.getCustomTags().split("\n");
+		StringBuilder newConfig = new StringBuilder();
 
-		String currentConfig = config.getCustomTags();
-		String newTag = tagText + "," + itemId;
+		boolean foundOld = false;
+		for (String line : lines)
+		{
+			if (line.trim().isEmpty())
+			{
+				continue;
+			}
 
-		if (currentConfig.isEmpty())
-		{
-			config.setCustomTags(newTag);
+			CustomTag tag = CustomTag.fromString(line);
+			if (tag.itemID == itemId)
+			{
+				line = tagText + "," + itemId;
+				if(tagLocation != null)
+				{
+					line = line + "," + tagLocation.getAbbriviated();
+				}
+				if(foundOld) continue;
+				foundOld=true;
+			}
+
+			if (newConfig.length() > 0)
+			{
+				newConfig.append("\n");
+			}
+			newConfig.append(line);
 		}
-		else
-		{
-			config.setCustomTags(currentConfig + "\n" + newTag);
-		}
+
+		config.setCustomTags(newConfig.toString());
 	}
+
+	void moveTag(int itemId, CustomTagLocation tagLocation)
+	{
+		String[] lines = config.getCustomTags().split("\n");
+		StringBuilder newConfig = new StringBuilder();
+
+		for (String line : lines)
+		{
+			line = line.trim();
+			if (line.isEmpty())
+			{
+				continue;
+			}
+
+			CustomTag tag = CustomTag.fromString(line);
+			if (tag.itemID == itemId)
+			{
+				tag = tag.withLoc(tagLocation);
+			}
+
+			if (newConfig.length() > 0)
+			{
+				newConfig.append("\n");
+			}
+			newConfig.append(tag.toLine());
+		}
+
+		config.setCustomTags(newConfig.toString());
+	}
+
 
 	@Override
 	protected void startUp()
